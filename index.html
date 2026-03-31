@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MY S-OIL 이벤트</title>
+  <style>
+    body { font-family: Arial; background: #f2f2f2; margin:0; padding:0; }
+    #container { max-width:500px; margin:50px auto; background:#fff; padding:30px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.2); text-align:center;}
+    h1 { color:#ff6600;}
+    button { padding:12px 24px; font-size:16px; border-radius:8px; border:none; background-color:#ff6600; color:#fff; cursor:pointer; margin-top:20px;}
+    button:hover{ background-color:#e65500;}
+    input { padding:10px; width:80%; margin-top:20px; font-size:16px;}
+    #message{margin-top:20px; font-size:20px; min-height:50px; padding:10px; border-radius:8px;}
+    .reward-A{background-color:#ffd700; color:#000;}
+    .reward-B{background-color:#c0c0c0; color:#000;}
+    .reward-C{background-color:#cd7f32; color:#fff;}
+    .reward-D{background-color:#87ceeb; color:#000;}
+    .reward-lost{background-color:#ccc; color:#000;}
+  </style>
+</head>
+<body>
+
+<div id="container">
+  <h1>MY S-OIL 회원 이벤트</h1>
+  <div id="content">
+    <p>회원 가입 후 랜덤 혜택을 받아보세요!</p>
+    <button onclick="start()">이벤트 참여</button>
+  </div>
+  <div id="message"></div>
+</div>
+
+<script>
+let currentUser = null;
+
+function start() {
+  const user = prompt("회원 ID를 입력하세요");
+  if (!user) return;
+  currentUser = user;
+
+  // 이벤트 화면에서만 기존 회원 테스트
+  if(user === "SOIL") {
+    showMessage("혜택 대상자가 아닙니다 (이미 회원)", "reward-lost");
+    return;
+  }
+
+  // 회원 여부 체크
+  if(!localStorage.getItem("member_"+user)) {
+    if(confirm("회원이 아닙니다. 회원가입을 진행하시겠습니까?")) {
+      showSignupForm();
+    } else {
+      showMessage("회원가입이 필요합니다.","reward-lost");
+    }
+    return;
+  }
+
+  // 이미 참여 여부
+  if(localStorage.getItem("event_"+user)) {
+    showMessage("이미 이벤트에 참여한 사용자입니다.","reward-lost");
+    return;
+  }
+
+  runLottery(user);
+}
+
+// 화면에서 회원가입 폼 표시
+function showSignupForm() {
+  currentUser = currentUser || "";
+  const contentDiv = document.getElementById("content");
+  contentDiv.innerHTML = `
+    <p>회원가입 화면</p>
+    <input type="text" id="signup-id" placeholder="회원 ID 입력" value="${currentUser}">
+    <br>
+    <button onclick="signup()">회원가입 완료</button>
+  `;
+  showMessage("", ""); // 메시지 제거
+}
+
+// 회원가입 처리
+function signup() {
+  const input = document.getElementById("signup-id");
+  const user = input.value.trim();
+  if(!user) { alert("ID를 입력해주세요."); return; }
+
+  localStorage.setItem("member_"+user,true);
+  currentUser = user;
+
+  showMessage("회원가입 완료! 랜덤 추첨 진행...", "reward-lost");
+  setTimeout(()=>runLottery(user),1000);
+}
+
+// 랜덤 추첨
+function runLottery(user) {
+  localStorage.setItem("event_"+user,true);
+
+  const pool = ["A","B","C","D","꽝"];
+  let result = pool[Math.floor(Math.random()*pool.length)];
+
+  switch(result){
+    case "A": showMessage("당첨! 🎉 A 혜택", "reward-A"); break;
+    case "B": showMessage("당첨! 🎉 B 혜택", "reward-B"); break;
+    case "C": showMessage("당첨! 🎉 C 혜택", "reward-C"); break;
+    case "D": showMessage("당첨! 🎉 D 혜택", "reward-D"); break;
+    default: showMessage(result+" 😢", "reward-lost"); break;
+  }
+}
+
+// 메시지 표시
+function showMessage(msg, cssClass){
+  const messageDiv = document.getElementById("message");
+  messageDiv.textContent = msg;
+  messageDiv.className = cssClass || "";
+}
+</script>
+
+</body>
+</html>
